@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingView Widgets Side by Side</title>
+    <style>
+	 body {
+            background-color: #121212; /* Dark background for the entire page */
+            color: #ffffff; /* Light text for contrast */
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .widget-container {
+            display: flex; /* Aligns widgets side by side */
+            justify-content: space-between; /* Space between widgets */
+            gap: 0px; /* Gap between widgets */
+        }
+        .widget {
+            flex: 1;
+            min-width: 260px;
+            height: 6800px; /* Fixed height for each widget */
+        }
+        .tradingview-widget-container {
+            height: 100%; /* Ensures the widget container takes the full height */
+        }
+        #market-status {
+            font-size: 18px;
+            margin-bottom: 18px;
+        }
+        #countdown {
+            font-size: 18px;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div id="market-status">Loading market status...</div>
+<div id="countdown">Calculating time...</div>
+
+<script>
+    function getMarketStatus() {
+        // Get the current time in the user's local time zone
+        let now = new Date();
+
+        // Convert to Eastern Time (New York Time)
+        let estOffset = -5 * 60; // UTC offset for EST (Eastern Standard Time)
+        let edtOffset = -4 * 60; // UTC offset for EDT (Eastern Daylight Time)
+        let isDST = isDaylightSavingTime(now);
+        let nyOffset = isDST ? edtOffset : estOffset;
+
+        let currentNYTime = new Date(now.getTime() + (now.getTimezoneOffset() + nyOffset) * 60000);
+
+        // NYSE trading hours: 9:30 AM to 4:00 PM
+        let marketOpenTime = new Date(currentNYTime);
+        marketOpenTime.setHours(9, 30, 0, 0); // 9:30 AM
+
+        let marketCloseTime = new Date(currentNYTime);
+        marketCloseTime.setHours(16, 0, 0, 0); // 4:00 PM
+
+        // Determine if it's a weekday (Monday to Friday)
+        let isWeekday = currentNYTime.getDay() > 0 && currentNYTime.getDay() < 6;
+
+        let marketStatusElement = document.getElementById("market-status");
+        let countdownElement = document.getElementById("countdown");
+
+        if (isWeekday && currentNYTime >= marketOpenTime && currentNYTime <= marketCloseTime) {
+            // Market is open
+            marketStatusElement.textContent = "The NYSE market is currently OPEN.";
+            let timeToClose = timeDifference(currentNYTime, marketCloseTime);
+            countdownElement.textContent = `Time until market closes: ${timeToClose}`;
+        } else if (isWeekday && currentNYTime < marketOpenTime) {
+            // Market is closed, but will open today
+            marketStatusElement.textContent = "The NYSE market is currently CLOSED.";
+            let timeToOpen = timeDifference(currentNYTime, marketOpenTime);
+            countdownElement.textContent = `Time until market opens: ${timeToOpen}`;
+        } else {
+            // Market is closed (either it's after 4:00 PM or it's a weekend)
+            marketStatusElement.textContent = "The NYSE market is currently CLOSED.";
+            let nextMarketOpen = getNextMarketOpenTime(currentNYTime);
+            let timeToOpen = timeDifference(currentNYTime, nextMarketOpen);
+            countdownElement.textContent = `Time until next market open: ${timeToOpen}`;
+        }
+    }
+
+    // Calculate time difference and return it as a readable string (HH:MM:SS)
+    function timeDifference(current, target) {
+        let diffMs = target - current;
+        let diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+        let diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        let diffSecs = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+        return `${pad(diffHrs)}:${pad(diffMins)}:${pad(diffSecs)}`;
+    }
+
+    // Pads single digit numbers with a leading zero
+    function pad(num) {
+        return num < 10 ? '0' + num : num;
+    }
+
+    // Check if it's Daylight Saving Time in the US
+    function isDaylightSavingTime(date) {
+        let jan = new Date(date.getFullYear(), 0, 1);
+        let jul = new Date(date.getFullYear(), 6, 1);
+        let stdTimezoneOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+        return date.getTimezoneOffset() < stdTimezoneOffset;
+    }
+
+    // Get the next market open time (either today or the next weekday)
+    function getNextMarketOpenTime(currentNYTime) {
+        let nextOpenTime = new Date(currentNYTime);
+        if (currentNYTime.getDay() === 5) { // Friday, market opens next Monday
+            nextOpenTime.setDate(nextOpenTime.getDate() + 3);
+        } else if (currentNYTime.getDay() === 6) { // Saturday, market opens next Monday
+            nextOpenTime.setDate(nextOpenTime.getDate() + 2);
+        } else {
+            nextOpenTime.setDate(nextOpenTime.getDate() + 1); // Next day
+        }
+        nextOpenTime.setHours(9, 30, 0, 0); // Set to 9:30 AM
+        return nextOpenTime;
+    }
+
+    // Update the market status every second
+    setInterval(getMarketStatus, 1000);
+
+    // Initial call to display status
+    getMarketStatus();
+</script>
+<BR>
+
+<div class="widget-container">
+    <div class="widget">
+        <!-- TradingView Widget 1 -->
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+  {
+  "colorTheme": "dark",
+  "dateRange": "12M",
+  "showChart": "TRUE",
+  "locale": "en",
+  "largeChartUrl": "",
+  "isTransparent": false,
+  "showSymbolLogo": true,
+  "showFloatingTooltip": true,
+  "width": "265",
+  "height": "690",
+  "tabs": [
+    {
+      "title": "Crypto",
+      "symbols": [
+        {
+          "s": "BINANCE:BTCUSDT",
+          "d": "BTC"
+        },
+        {
+          "s": "BINANCE:ETHUSDT",
+          "d": "ETH"
+        },
+        {
+          "s": "BINANCE:ADAUSDT",
+          "d": "ADA"
+        },
+        {
+          "s": "BINANCE:SOLUSDT",
+          "d": "SOL"
+        },
+        {
+          "s": "BINANCE:DOGEUSDT",
+          "d": "DOGE"
+        },
+        {
+          "s": "BINANCE:DOTUSDT",
+          "d": "Polkadot"
+        },
+        {
+          "s": "COINBASE:CROUSDT",
+          "d": "CRO"
+        },
+        {
+          "s": "BINANCE:ATOMUSDT",
+          "d": "ATOM"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+</div>
+<!-- TradingView Widget END -->
+    </div>
+    <div class="widget">
+        <!-- TradingView Widget 2 -->
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+  {
+  "colorTheme": "dark",
+  "dateRange": "12M",
+  "showChart": true,
+  "locale": "en",
+  "largeChartUrl": "",
+  "isTransparent": false,
+  "showSymbolLogo": true,
+  "showFloatingTooltip": true,
+  "width": "265",
+  "height": "690",
+  "tabs": [
+    {
+      "title": "Crypto",
+      "symbols": [
+        {
+          "s": "BINANCE:OSMOUSDT",
+          "d": "OSMO"
+        },
+        {
+          "s": "BINANCE:LINKUSDT",
+          "d": "LINK"
+        },
+        {
+          "s": "BINANCE:NEARUSDT",
+          "d": "NEAR"
+        },
+        {
+          "s": "BINANCE:GALAUSDT",
+          "d": "GALA"
+        },
+        {
+          "s": "FX_IDC:USDEUR",
+          "d": "EURO to USD"
+        },
+        {
+          "s": "FX_IDC:USDGBP",
+          "d": "GBP USD"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+</div>
+<!-- TradingView Widget END -->
+    </div>
+
+    <div class="widget">
+        <!-- TradingView Widget 3 -->
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+  {
+  "colorTheme": "dark",
+  "dateRange": "12M",
+  "showChart": true,
+  "locale": "en",
+  "largeChartUrl": "",
+  "isTransparent": false,
+  "showSymbolLogo": true,
+  "showFloatingTooltip": true,
+  "width": "265",
+  "height": "690",
+  "tabs": [
+    {
+      "title": "Stocks",
+      "symbols": [
+        {
+          "s": "FRED:SP500",
+          "d": "S&P 500"
+        },
+        {
+          "s": "HSI:HSI",
+          "d": "HANGSENG INDEX"
+        },
+        {
+          "s": "TSX:TSX",
+          "d": "S&P/TSX Comp INDEX"
+        },
+        {
+          "s": "FX_IDC:USDCAD",
+          "d": "CAD to USD"
+        },
+        {
+          "s": "FX_IDC:USDTWD",
+          "d": "TWD to USD"
+        },
+        {
+          "s": "FX_IDC:USDJPY",
+          "d": "JPY to USD"
+        },
+        {
+          "s": "FX_IDC:USDCNY",
+          "d": "CNY to USD"
+        }
+      ],
+      "originalTitle": "Indices"
+    }
+  ]
+}
+  </script>
+</div>
+<!-- TradingView Widget END -->
+    </div>
+
+    <div class="widget">
+        <!-- TradingView Widget 4 -->
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+  {
+  "colorTheme": "dark",
+  "dateRange": "12M",
+  "showChart": true,
+  "locale": "en",
+  "largeChartUrl": "",
+  "isTransparent": false,
+  "showSymbolLogo": true,
+  "showFloatingTooltip": true,
+  "width": "265",
+  "height": "690",
+  "tabs": [
+    {
+      "title": "Stocks",
+      "symbols": [
+        {
+          "s": "NASDAQ:NVAX",
+          "d": "NVAX"
+        },
+        {
+          "s": "NASDAQ:TTD",
+          "d": "TTD"
+        },
+        {
+          "s": "NASDAQ:TSLA",
+          "d": "TSLA"
+        },
+        {
+          "s": "NASDAQ:META",
+          "d": "META"
+        },
+        {
+          "s": "NASDAQ:MSFT",
+          "d": "MSFT"
+        },
+        {
+          "s": "NASDAQ:GOOG",
+          "d": "Google"
+        }
+      ],
+      "originalTitle": "Indices"
+    }
+  ]
+}
+  </script>
+</div>
+<!-- TradingView Widget END -->
+    </div>
+
+    <div class="widget">
+        <!-- TradingView Widget 6 -->
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+  {
+  "colorTheme": "dark",
+  "dateRange": "12M",
+  "showChart": true,
+  "locale": "en",
+  "largeChartUrl": "",
+  "isTransparent": false,
+  "showSymbolLogo": true,
+  "showFloatingTooltip": true,
+  "width": "265",
+  "height": "690",
+  "tabs": [
+    {
+      "title": "Stocks",
+      "symbols": [
+        {
+          "s": "NYSE:PLTR",
+          "d": "PLTR"
+        },
+        {
+          "s": "NASDAQ:SOFI",
+          "d": "SOFI"
+        },
+        {
+          "s": "TPEX:2646",
+          "d": "Starlux"
+        },
+        {
+          "s": "NASDAQ:AMD",
+          "d": "AMD"
+        },
+        {
+          "s": "NASDAQ:NVDA",
+          "d": "NVDA"
+        },
+        {
+          "s": "NYSE:OXY",
+          "d": "OXY"
+        },
+        {
+          "s": "NYSE:OKLO",
+          "d": "OKLO"
+        }
+      ],
+      "originalTitle": "Indices"
+    }
+  ]
+}
+  </script>
+</div>
+<!-- TradingView Widget END -->
+    </div>
+
+</div>
+</body>
+</html>
+
+
+
